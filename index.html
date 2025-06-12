@@ -1,0 +1,132 @@
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>MRN Araştırma / Tahsilat Durumu Sorgulama</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background-color: #f7f7f7;
+            background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/Ticaret_Bakanl%C4%B1%C4%9F%C4%B1_logo.svg/800px-Ticaret_Bakanl%C4%B1%C4%9F%C4%B1_logo.svg.png');
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: 500px;
+            background-attachment: fixed;
+            opacity: 0.97;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            margin-top: 40px;
+            margin-bottom: 40px;
+        }
+        h1 {
+            color: #991F1F;
+            font-size: 24px;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 10px 25px;
+            font-size: 16px;
+            background-color: #991F1F;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-bottom: 15px;
+        }
+        button:hover {
+            background-color: #7a1a1a;
+        }
+        #sonuc {
+            margin-top: 20px;
+            background-color: #f0f0f0;
+            padding: 15px;
+            border-radius: 10px;
+        }
+        .note, .contact {
+            text-align: left;
+            margin-top: 25px;
+        }
+        .note p, .contact p {
+            margin: 6px 0;
+        }
+        .icon {
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>MRN Araştırma / Tahsilat Durumu Sorgulama</h1>
+
+    <input type="text" id="mrnInput" placeholder="MRN giriniz (örneğin: 24TR16010000676504)">
+    <button onclick="mrnSorgula()">Sorgula</button>
+
+    <div id="sonuc"></div>
+
+    <div class="note">
+        <p>⚠️ Bu sorgulama sayfası yalnızca <strong>Bursa Gümrük Müdürlüğü</strong> hareketli beyanlar için geçerlidir.</p>
+        <p>⚠️ Sorgulama, NCTS Yerel Koordinatörü tarafından sisteme girilen verileri içermektedir.</p>
+        <p>⚠️ Bu veriler, bilgi amaçlı olup yasal bir geçerliliği yoktur.</p>
+        <p>📅 Veriler her pazartesi günü güncellenmektedir.</p>
+    </div>
+
+    <div class="contact">
+        <h3>İletişim</h3>
+        <p>📍 Fethiye Organize Sanayi Bölgesi Sarı Cadde No:2 E Blok 16140 Nilüfer / Bursa</p>
+        <p>📧 s.colak2@ticaret.gov.tr</p>
+        <p>📨 bursagumrukmudurlugu@gtb.hs01.kep.tr</p>
+    </div>
+</div>
+
+<script>
+    const sheetID = '1rZHWb5x9Dw_2SACL6viAFj214SAsOOXZ';
+    const apiKey = 'AIzaSyCKHf5kBhIPQKn-tzX7Nif8GfQl4Y3jSs4';
+    const range = 'Veriler';
+
+    function mrnSorgula() {
+        const inputMRN = document.getElementById("mrnInput").value.trim().toUpperCase();
+
+        fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetID}/values/${range}?key=${apiKey}`)
+        .then(response => response.json())
+        .then(data => {
+            const rows = data.values;
+            const headers = rows[0];
+            const records = rows.slice(1);
+
+            const match = records.find(row => row[0] === inputMRN);
+
+            if (match) {
+                document.getElementById("sonuc").innerHTML = `
+                    <b>MRN:</b> ${match[0]}<br>
+                    <b>Statü:</b> ${match[1]}<br>
+                    <b>Varış Gümrüğü:</b> ${match[2]}<br>
+                    <b>Rejim Hak Sahibi:</b> ${match[3]}
+                `;
+            } else {
+                document.getElementById("sonuc").innerHTML = "❌ Bu MRN ile eşleşen bir kayıt bulunamadı.";
+            }
+        })
+        .catch(error => {
+            console.error('Hata:', error);
+            document.getElementById("sonuc").innerHTML = "⚠️ Veri alınamadı, lütfen daha sonra tekrar deneyiniz.";
+        });
+    }
+</script>
+
+</body>
+</html>
